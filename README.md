@@ -198,6 +198,42 @@ For more information about configuring the console over USB CDC ACM, see the fol
  * https://docs.zephyrproject.org/latest/connectivity/usb/device/usb_device.html
  * https://docs.zephyrproject.org/latest/samples/subsys/usb/console/README.html
 
+## Development Environment: STM32F469 Discovery
+
+> **IMPORTANT!** This Docker image is intended for STM32 development and tested with the STM32F469I-DISCO (`stm32f469i_disco`) board.
+
+Build the image:
+
+```sh
+docker build -t env-zephyr-stm32f469 -f Dockerfile.stm32f469 .
+```
+
+Run the image on Linux/macOS:
+
+```sh
+docker run --rm -it -p 3333:3333 -p 2222:22 -p 8800:8800 -v "$(pwd)"/workspace:/workspace -w /workspace env-zephyr-stm32f469
+```
+
+Run the image on Windows (PowerShell):
+
+```sh
+docker run --rm -it -p 3333:3333 -p 2222:22 -p 8800:8800 -v "${PWD}\workspace:/workspace" -w /workspace env-zephyr-stm32f469
+```
+
+Connect to the container by following one of the methods given in the Espressif version of [Connect to Container](#connect-to-container).
+
+Build the `01_blink` application for STM32F469I-DISCO:
+
+```sh
+cd apps/01_blink
+west build -p always -b stm32f469i_disco
+```
+
+If your boot log shows `otm8009a: Read panel ID failed` on STM32F469I-DISCO, your board might be the AU1 display variant (NT35510 panel). Build using the AU1 target:
+
+```sh
+west build -p always -b stm32f469i_disco/stm32f469xx/au1
+```
 
 ## License
 
