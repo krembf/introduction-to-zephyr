@@ -1,5 +1,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/display.h>
+#include <zephyr/drivers/gpio.h>
 #include <lvgl.h>
 #include <string.h>
 
@@ -17,11 +18,15 @@ int main(void)
 	lv_obj_t *rect;
 	lv_obj_t *circle;
 	lv_style_t counter_label_style;
+	lv_style_t screen_style;
 	lv_style_t rect_style;
 	lv_style_t circle_style;
-	lv_point_t rect_points[5] = { {0, 0}, {120, 0}, {120, 20}, {0, 20}, {0, 0} };
+	lv_style_t text_style;
+	lv_point_precise_t rect_points[5] = { {0, 0}, {120, 0}, {120, 20}, {0, 20}, {0, 0} };
 	const uint32_t circle_radius = 15;
 	uint32_t circle_pos = 0;
+	/* STM32F469I-DISCO LCD backlight GPIO (from board DTS): PA3 */
+	const struct device *gpioa = DEVICE_DT_GET(DT_NODELABEL(gpioa));
 
 	// Make sure the display has been initialized
 	display = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
@@ -30,8 +35,21 @@ int main(void)
 		return 0;
 	}
 
+	if (device_is_ready(gpioa)) {
+		gpio_pin_configure(gpioa, 3, GPIO_OUTPUT_ACTIVE);
+	}
+
 	// Get width of the default display
 	width = (uint32_t)lv_disp_get_hor_res(NULL);
+
+    // Make text/background contrast explicit.
+    lv_style_init(&screen_style);
+    lv_style_set_bg_opa(&screen_style, LV_OPA_COVER);
+    lv_style_set_bg_color(&screen_style, lv_color_hex(0x202020));
+    lv_obj_add_style(lv_scr_act(), &screen_style, 0);
+
+    lv_style_init(&text_style);
+    lv_style_set_text_color(&text_style, lv_color_hex(0xFFFFFF));
 
 	// Create static label widget
 	hello_label = lv_label_create(lv_scr_act());
@@ -72,8 +90,7 @@ int main(void)
 	lv_obj_add_style(circle, &circle_style, 0);
 	lv_obj_align(circle, LV_ALIGN_LEFT_MID, 0, 0);
 
-	// lv_task_handler();
-	display_blanking_off(display);
+	// Backlight is controlled through GPIO for this LTDC-only setup.
 
 	// Do forever
 	while (1) {

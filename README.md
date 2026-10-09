@@ -239,6 +239,7 @@ Tested apps
 
  * 01_blink
  * 10_demo_display
+ * 10_solution_animation
 
 ## License
 
