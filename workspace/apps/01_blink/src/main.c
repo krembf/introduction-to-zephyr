@@ -1,43 +1,40 @@
-#include <stdio.h>
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
-// Settings
-static const int32_t sleep_time_ms = 1000;
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(my_led), gpios);
+#define SLEEP_TIME_MS 1000
+#define LED0_NODE DT_ALIAS(led0)
+
+#if !DT_NODE_HAS_STATUS(LED0_NODE, okay)
+#error "Unsupported board: led0 devicetree alias is not defined"
+#endif
+
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
 int main(void)
 {
 	int ret;
 	int state = 0;
 
-	// Make sure that the GPIO was initialized
 	if (!gpio_is_ready_dt(&led)) {
+		printk("LED GPIO is not ready\n");
 		return 0;
 	}
 
-	// Set the GPIO as output
-	ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT);
+	ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
 	if (ret < 0) {
+		printk("Failed to configure LED GPIO (%d)\n", ret);
 		return 0;
 	}
 
-	// Do forever
 	while (1) {
-
-		// Change the state of the pin and print
 		state = !state;
-		printk("LED state: %d\r\n", state);
-		
-		// Set pin state
 		ret = gpio_pin_set_dt(&led, state);
 		if (ret < 0) {
+			printk("Failed to set LED GPIO (%d)\n", ret);
 			return 0;
 		}
 
-		// Sleep
-		k_msleep(sleep_time_ms);
+		printk("LED state: %d\n", state);
+		k_msleep(SLEEP_TIME_MS);
 	}
-
-	return 0;
 }

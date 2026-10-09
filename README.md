@@ -235,6 +235,11 @@ If your boot log shows `otm8009a: Read panel ID failed` on STM32F469I-DISCO, you
 west build -p always -b stm32f469i_disco/stm32f469xx/au1
 ```
 
+Tested apps
+
+ * 01_blink
+ * 10_demo_display
+
 ## License
 
 All software in this repository, unless otherwise noted, is licensed under the [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) license.
